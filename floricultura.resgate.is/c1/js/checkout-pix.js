@@ -112,6 +112,7 @@
         border: 1px solid var(--imperial-line);
         border-radius: 14px;
         background: #fff;
+        min-width: 0;
         padding: 10px 8px;
         text-align: center;
         transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
@@ -579,7 +580,24 @@
         }
 
         .imperial-stepper {
-          grid-template-columns: 1fr;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 7px;
+        }
+
+        .imperial-stepper__item {
+          padding: 9px 4px;
+          border-radius: 13px;
+        }
+
+        .imperial-stepper__number {
+          width: 22px;
+          height: 22px;
+          font-size: .74rem;
+        }
+
+        .imperial-stepper__label {
+          font-size: .7rem;
+          white-space: nowrap;
         }
 
         .imperial-form-actions {
