@@ -1,0 +1,286 @@
+<!DOCTYPE html><html lang="pt-BR">
+<!-- Mirrored from floricultura.resgate.is/c1/produtos/amorEterno/ by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 02 May 2026 07:05:56 GMT -->
+<head>
+  <meta charset="UTF-8">
+  <title>Confirmação do Pedido | Imperial Floricultura</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="tiktok-pixel-id" content="">
+  <script
+  src="../../../../cdn.utmify.com.br/scripts/utms/latest.js"
+  data-utmify-prevent-xcod-sck
+  data-utmify-prevent-subids
+  async
+  defer
+></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #fdf5f7;
+      color: #333;
+      padding: 0 20px 20px;
+    }
+    .fixed-timer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #C2030F;
+      color: #fff;
+      padding: 10px 20px;
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      z-index: 1000;
+    }
+    .container {
+      max-width: 540px;
+      margin: 80px auto 0;
+      background: #fff;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+    h2 {
+      font-size: 1.7rem;
+      text-align: center;
+      color: #C2030F;
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+    .product {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+      align-items: flex-start;
+    }
+    .product img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+    .product-details {
+      flex: 1;
+    }
+    .product-details p {
+      font-size: 0.94rem;
+      color: #444;
+      margin: 3px 0;
+      text-align: left;
+    }
+    .price-old {
+      color: #888;
+      font-size: 0.88rem;
+      text-decoration: line-through;
+    }
+    .price-new {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2E7D32;
+    }
+    .price-new strong {
+  color: #2E7D32;
+  font-weight: 600;
+    }
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      background-color: #fcfcfc;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #C2030F;
+      outline: none;
+    }
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+    .form-row .half {
+      width: 50%;
+    }
+    .section {
+      margin-top: 30px;
+      padding-top: 10px;
+      border-top: 1px solid #eee;
+    }
+    .section h3 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: #C2030F;
+    }
+    button {
+      margin-top: 24px;
+      width: 100%;
+      padding: 14px;
+      background: #2E7D32;
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+    button:hover { opacity: 0.9; }
+    textarea { resize: vertical; }
+    .footer-note {
+      margin-top: 24px;
+      font-size: 0.8rem;
+      text-align: center;
+      color: #999;
+    }
+    .discount {
+      background-color: #fff3f5;
+      padding: 10px;
+      border: 1px dashed #C2030F;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      color: #C2030F;
+      text-align: center;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+                <div style="display: none;">
+        <script id="_wauznp">
+            var _wau = _wau || [];
+            _wau.push(["dynamic", "2d401l3c4h", "znp", "c4302bffffff", "small"]);
+        </script>
+        <script async src="../../../../waust.at/d.js"></script>
+    </div>
+  <div class="fixed-timer">
+    Seu pedido está reservado por <span id="countdown">15:00</span> minutos...
+  </div>
+
+  <div class="container">
+    <h2>Sua surpresa está quase pronta! 🎁</h2>
+
+    <div class="product">
+      <img src="../../images/kit01.png" alt="Kit Amor Eterno">
+      <div class="product-details">
+        <p><strong>2Kits:</strong> Amor Eterno</p>
+        <p><strong>Inclui:</strong> Buquê de flores, pelúcia, chocolates e cartão.</p>
+        <p class="price-old">De: R$ 169,80</p>
+        <p class="price-new">Por: <strong>R$ 27,90</strong></p>
+      </div>
+    </div>
+
+    <div class="discount">
+      Cupom <strong>PRIMEIRACOMPRA</strong> aplicado! Você economizou R$141,90 💝
+    </div>
+
+    <form onsubmit="enviarPedido(event)">
+      <div class="section">
+        <h3>Quem irá receber?</h3>
+        <select id="tipoEntrega" onchange="atualizarFormulario()" required="">
+          <option value="">Escolha uma opção</option>
+          <option value="eu">Eu mesmo vou receber</option>
+          <option value="presente">Presente para outra pessoa</option>
+        </select>
+      </div>
+
+      <div class="section">
+        <h3>Dados de quem está comprando</h3>
+        <label>Seu nome</label>
+        <input type="text" id="nomeComprador" required="">
+        <label>Seu telefone</label>
+        <input type="tel" id="telComprador" required="">
+      </div>
+
+      <div id="dadosPresenteado" class="section hidden">
+        <h3>Dados de quem irá receber</h3>
+        <label>Nome de quem vai receber</label>
+        <input type="text" id="nomeDestinatario">
+        <label>Telefone de quem vai receber</label>
+        <input type="tel" id="telDestinatario">
+      </div>
+
+      <div class="section">
+        <h3>Endereço de entrega</h3>
+        <label>Rua</label>
+        <input type="text" id="rua" required="">
+        <div class="form-row">
+          <div class="half">
+            <label>Número</label>
+            <input type="text" id="numero" required="">
+          </div>
+          <div class="half">
+            <label>Bairro</label>
+            <input type="text" id="bairro" required="">
+          </div>
+        </div>
+        <label>Complemento (opcional)</label>
+        <input type="text" id="complemento">
+      </div>
+
+      <div class="section">
+        <h3>Data e horário</h3>
+    <label for="data_entrega">Data da entrega <span style="font-weight: 400; font-size: 0.85rem; color: #888;">(clique para escolher)</span></label>
+    <input type="date" id="data_entrega" required="">
+        <label>Horário da entrega</label>
+        <select id="horario" required="">
+          <option value="">Selecione o horário</option>
+          <option value="08:00 – 10:00">08:00 – 10:00</option>
+          <option value="10:00 – 12:00">10:00 – 12:00</option>
+          <option value="12:00 – 14:00">12:00 – 14:00</option>
+          <option value="14:00 – 16:00">14:00 – 16:00</option>
+          <option value="16:00 – 18:00">16:00 – 18:00</option>
+          <option value="18:00 – 20:00">18:00 – 20:00</option>
+          <option value="20:00 – 22:00">20:00 – 22:00</option>
+          <option value="22:00 – 00:00">22:00 – 00:00</option>
+        </select>
+      </div>
+      <div class="section">
+        <h3>Mensagem no Cartão</h3>
+        <label>Escreva a mensagem desejada</label>
+        <textarea id="observacoes" rows="3" placeholder="Ex: Parabéns meu amor, te amo!"></textarea>
+      </div>
+
+      <button type="submit">Prosseguir para o pagamento do pedido</button>
+    </form>
+
+    <div class="footer-note">
+      © 2025 Imperial Floricultura - CNPJ: 032.52.721/0001-00
+    </div>
+  </div>
+  <!-- Seu conteúdo HTML acima todo aqui -->
+<script>
+  function enviarPedido(event) {
+  event.preventDefault();
+
+  Swal.fire({
+    title: 'Pedido finalizado!',
+    text: 'Você será redirecionado para continuar o pagamento.',
+    icon: 'success',
+    showConfirmButton: false,
+    timer: 2500,
+    timerProgressBar: true,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  }).then(() => {
+    const params = window.location.search; // pega tudo após o "?"
+    window.location.href = "https://checkout.arkama.com.br/pay/PL1KMOAV" + params;
+  });
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="../../js/checkout-pix.js"></script>
+
+</body>
+<!-- Mirrored from floricultura.resgate.is/c1/produtos/amorEterno/ by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 02 May 2026 07:05:56 GMT -->
+</html>

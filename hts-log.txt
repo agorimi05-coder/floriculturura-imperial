@@ -1,0 +1,21 @@
+HTTrack3.49-2+htsswf+htsjava launched on Sat, 02 May 2026 04:05:41 at https://floricultura.resgate.is/c1/ +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar
+(winhttrack -qwC2%Ps2u1%s%uN0%I0p3DaK0H0%kf2A25000%f#f -F "Mozilla/4.5 (compatible; HTTrack 3.0x; Windows 98)" -%F "<!-- Mirrored from %s%s by HTTrack Website Copier/3.x [XR&CO'2014], %s -->" -%l "en, *" https://floricultura.resgate.is/c1/ -O1 "C:\Users\Usuario\Downloads\sites\floricultura" +*.png +*.gif +*.jpg +*.jpeg +*.css +*.js -ad.doubleclick.net/* -mime:application/foobar )
+
+Information, Warnings and Errors reported for this mirror:
+note:	the hts-log.txt file, and hts-cache folder, may contain sensitive information,
+	such as username/password authentication for websites mirrored in this project
+	do not share these files/folders if you want these information to remain private
+
+04:05:54	Error: 	"Not Found" (404) at link https://floricultura.resgate.is/c1/img/logo.webp (from https://floricultura.resgate.is/c1/)
+04:05:57	Error: 	"Not Found" (404) at link https://floricultura.resgate.is/images/dep06.jpg (from https://floricultura.resgate.is/c1/)
+04:05:57	Error: 	"Not Found" (404) at link https://floricultura.resgate.is/c1/link.href (from https://floricultura.resgate.is/c1/)
+04:05:57	Error: 	"Not Found" (404) at link https://floricultura.resgate.is/c1/css/bootstrap.min.css (from https://floricultura.resgate.is/c1/icon.html)
+04:05:57	Error: 	"Not Found" (404) at link https://floricultura.resgate.is/c1/images/page_not_found.svg (from https://floricultura.resgate.is/c1/icon.html)
+04:05:57	Error: 	"Not Found" (404) at link https://floricultura.resgate.is/c1/amung.us/dynamic.js (from waust.at/d.js)
+04:05:57	Error: 	"Not Found" (404) at link https://floricultura.resgate.is/c1/produtos/luxoDesejo/link.href (from https://floricultura.resgate.is/c1/produtos/luxoDesejo/)
+04:05:57	Error: 	"Not Found" (404) at link https://floricultura.resgate.is/c1/produtos/mixAmor/link.href (from https://floricultura.resgate.is/c1/produtos/mixAmor/)
+04:05:57	Error: 	"Not Found" (404) at link https://floricultura.resgate.is/c1/produtos/noitePerfeita/link.href (from https://floricultura.resgate.is/c1/produtos/noitePerfeita/)
+04:05:57	Error: 	"Not Found" (404) at link https://floricultura.resgate.is/c1/produtos/pedidoNamoro/link.href (from https://floricultura.resgate.is/c1/produtos/pedidoNamoro/)
+
+HTTrack Website Copier/3.49-2 mirror complete in 16 seconds : 60 links scanned, 49 files written (11842758 bytes overall) [10910406 bytes received at 681900 bytes/sec], 12339991 bytes transferred using HTTP compression in 58 files, ratio 87%, 6.7 requests per connection
+(10 errors, 0 warnings, 0 messages)
