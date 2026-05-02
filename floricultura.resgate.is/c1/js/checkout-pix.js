@@ -114,6 +114,17 @@
         background: #fff;
         padding: 10px 8px;
         text-align: center;
+        transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+      }
+
+      .imperial-stepper__item.is-active {
+        border-color: rgba(184, 15, 31, .34);
+        background: #fff6f8;
+        box-shadow: 0 10px 22px rgba(184, 15, 31, .10);
+      }
+
+      .imperial-stepper__item.is-done .imperial-stepper__number {
+        background: var(--imperial-green);
       }
 
       .imperial-stepper__number {
@@ -159,6 +170,76 @@
         color: #fff;
         font-size: .76rem;
         font-weight: 900;
+      }
+
+      .imperial-step-panel {
+        display: grid;
+        gap: 14px;
+      }
+
+      .imperial-step-panel[hidden] {
+        display: none !important;
+      }
+
+      .imperial-review {
+        display: grid;
+        gap: 10px;
+      }
+
+      .imperial-review__box {
+        padding: 13px 14px;
+        border: 1px solid var(--imperial-line);
+        border-radius: 14px;
+        background: #fffafc;
+      }
+
+      .imperial-review__label {
+        display: block;
+        color: var(--imperial-muted);
+        font-size: .76rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+      }
+
+      .imperial-review__value {
+        color: var(--imperial-ink);
+        font-size: .96rem;
+        line-height: 1.35;
+        font-weight: 750;
+      }
+
+      .imperial-form-actions {
+        display: grid;
+        grid-template-columns: 1fr 1.4fr;
+        gap: 10px;
+        align-items: center;
+        margin-top: 2px;
+      }
+
+      .imperial-form-actions button {
+        min-height: 52px !important;
+        margin: 0 !important;
+      }
+
+      .imperial-back-button {
+        border: 1px solid var(--imperial-line) !important;
+        border-radius: 16px !important;
+        background: #fff !important;
+        color: var(--imperial-red-dark) !important;
+        box-shadow: none !important;
+        font-size: .98rem !important;
+        font-weight: 900 !important;
+      }
+
+      .imperial-next-button {
+        border: 0 !important;
+        border-radius: 16px !important;
+        background: linear-gradient(135deg, var(--imperial-green), var(--imperial-green-dark)) !important;
+        color: #fff !important;
+        box-shadow: 0 16px 26px rgba(36, 132, 55, .24) !important;
+        font-size: .98rem !important;
+        font-weight: 900 !important;
       }
 
       .section {
@@ -239,6 +320,10 @@
         box-shadow: 0 16px 26px rgba(36, 132, 55, .26) !important;
         font-size: 1.02rem !important;
         font-weight: 800 !important;
+      }
+
+      form > button[type="submit"] {
+        display: none !important;
       }
 
       button[type="submit"]:hover {
@@ -453,6 +538,10 @@
           grid-template-columns: 1fr;
         }
 
+        .imperial-form-actions {
+          grid-template-columns: 1fr;
+        }
+
         .imperial-pix__hero {
           padding: 20px 18px 16px;
         }
@@ -514,6 +603,155 @@
 
     var submit = document.querySelector('button[type="submit"]');
     if (submit) submit.textContent = "Gerar Pix do pedido";
+  }
+
+  function setupSteppedCheckout() {
+    var form = document.querySelector("form");
+    if (!form || form.dataset.imperialStepped === "true") return;
+
+    var sections = Array.prototype.slice.call(form.querySelectorAll(".section"));
+    if (sections.length < 3) return;
+
+    form.dataset.imperialStepped = "true";
+
+    var panels = [
+      { title: "Dados", nodes: sections.slice(0, 3) },
+      { title: "Entrega", nodes: sections.slice(3) },
+      { title: "Confirmar", nodes: [] }
+    ];
+
+    panels.forEach(function (panel, index) {
+      var wrapper = document.createElement("div");
+      wrapper.className = "imperial-step-panel";
+      wrapper.dataset.step = String(index);
+      if (index !== 0) wrapper.hidden = true;
+
+      if (index < 2) {
+        panel.nodes[0].parentNode.insertBefore(wrapper, panel.nodes[0]);
+        panel.nodes.forEach(function (node) {
+          wrapper.appendChild(node);
+        });
+      } else {
+        wrapper.innerHTML =
+          '<div class="section imperial-review-section">' +
+            '<h3>Confira seu pedido</h3>' +
+            '<div class="imperial-review" id="imperial-review"></div>' +
+          '</div>';
+        form.insertBefore(wrapper, form.querySelector('button[type="submit"]'));
+      }
+    });
+
+    var actions = document.createElement("div");
+    actions.className = "imperial-form-actions";
+    actions.innerHTML =
+      '<button type="button" class="imperial-back-button" id="imperial-back-button">Voltar</button>' +
+      '<button type="button" class="imperial-next-button" id="imperial-next-button">Continuar</button>';
+    form.appendChild(actions);
+
+    var currentStep = 0;
+    var backButton = document.getElementById("imperial-back-button");
+    var nextButton = document.getElementById("imperial-next-button");
+    var originalSubmit = form.querySelector('button[type="submit"]');
+    var stepItems = Array.prototype.slice.call(document.querySelectorAll(".imperial-stepper__item"));
+
+    function fieldsForStep(step) {
+      var panel = form.querySelector('.imperial-step-panel[data-step="' + step + '"]');
+      return panel ? Array.prototype.slice.call(panel.querySelectorAll("input, select, textarea")) : [];
+    }
+
+    function validateStep(step) {
+      var fields = fieldsForStep(step).filter(function (field) {
+        return !field.disabled && field.offsetParent !== null;
+      });
+
+      for (var i = 0; i < fields.length; i += 1) {
+        if (!fields[i].checkValidity()) {
+          fields[i].reportValidity();
+          fields[i].focus();
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function reviewLine(label, value) {
+      return (
+        '<div class="imperial-review__box">' +
+          '<span class="imperial-review__label">' + escapeHtml(label) + '</span>' +
+          '<div class="imperial-review__value">' + escapeHtml(value || "-") + '</div>' +
+        '</div>'
+      );
+    }
+
+    function updateReview() {
+      var product = getProduct();
+      var review = document.getElementById("imperial-review");
+      var receiver =
+        getField("tipoEntrega") === "presente"
+          ? getField("nomeDestinatario") || "Presente para outra pessoa"
+          : "Eu mesmo vou receber";
+      var address = [getField("rua"), getField("numero"), getField("bairro")]
+        .filter(Boolean)
+        .join(", ");
+      var delivery = [getField("data_entrega"), getField("horario")]
+        .filter(Boolean)
+        .join(" - ");
+
+      if (!review) return;
+
+      review.innerHTML =
+        reviewLine("Produto", product.name + " - " + formatCurrency(product.totalPrice)) +
+        reviewLine("Comprador", getField("nomeComprador") + " - " + getField("telComprador")) +
+        reviewLine("Recebimento", receiver) +
+        reviewLine("Endereco", address + (getField("complemento") ? " - " + getField("complemento") : "")) +
+        reviewLine("Data e horario", delivery) +
+        reviewLine("Mensagem", getField("observacoes"));
+    }
+
+    function setStep(step) {
+      currentStep = Math.max(0, Math.min(2, step));
+
+      Array.prototype.slice.call(form.querySelectorAll(".imperial-step-panel")).forEach(function (panel) {
+        panel.hidden = panel.dataset.step !== String(currentStep);
+      });
+
+      stepItems.forEach(function (item, index) {
+        item.classList.toggle("is-active", index === currentStep);
+        item.classList.toggle("is-done", index < currentStep);
+      });
+
+      if (backButton) backButton.style.visibility = currentStep === 0 ? "hidden" : "visible";
+      if (nextButton) nextButton.textContent = currentStep === 2 ? "Gerar Pix do pedido" : "Continuar";
+      if (currentStep === 2) updateReview();
+
+      var container = document.querySelector(".container");
+      if (container) container.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    if (backButton) {
+      backButton.addEventListener("click", function () {
+        setStep(currentStep - 1);
+      });
+    }
+
+    if (nextButton) {
+      nextButton.addEventListener("click", function () {
+        if (currentStep < 2) {
+          if (!validateStep(currentStep)) return;
+          setStep(currentStep + 1);
+          return;
+        }
+
+        if (form.requestSubmit) {
+          form.requestSubmit(originalSubmit || undefined);
+        } else if (originalSubmit) {
+          originalSubmit.click();
+        }
+      });
+    }
+
+    setStep(0);
   }
 
   function moneyToNumber(value) {
@@ -816,6 +1054,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     injectCheckoutStyles();
     enhanceCheckoutFields();
+    setupSteppedCheckout();
     var product = getProduct();
     if (product.totalPrice) track("ViewContent", product, product.totalPrice);
   });
