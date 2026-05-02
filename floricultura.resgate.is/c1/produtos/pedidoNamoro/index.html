@@ -155,13 +155,6 @@
   </style>
 </head>
 <body>
-                <div style="display: none;">
-        <script id="_wauznp">
-            var _wau = _wau || [];
-            _wau.push(["dynamic", "2d401l3c4h", "znp", "c4302bffffff", "small"]);
-        </script>
-        <script async src="../../../../waust.at/d.js"></script>
-    </div>
   <div class="fixed-timer">
     Seu pedido está reservado por <span id="countdown">15:00</span> minutos...
   </div>
@@ -315,25 +308,6 @@ storeUrlParams();
 
 // Adicionar os parâmetros a todas as tags <a> quando a página estiver pronta
 document.addEventListener('DOMContentLoaded', addParamsToLinks);
-</script>
-<script>
-  function enviarPedido(event) {
-    event.preventDefault();
-
-    Swal.fire({
-      title: 'Pedido finalizado!',
-      text: 'Você será redirecionado para continuar o pagamento.',
-      icon: 'success',
-      showConfirmButton: false,
-      timer: 2500,
-      timerProgressBar: true,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    }).then(() => {
-      window.location.href = "https://checkout.arkama.com.br/pay/PL1KMOBM";
-    });
-  }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../../js/checkout-pix.js"></script>

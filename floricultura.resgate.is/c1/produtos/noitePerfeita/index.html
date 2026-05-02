@@ -309,25 +309,6 @@ storeUrlParams();
 // Adicionar os parâmetros a todas as tags <a> quando a página estiver pronta
 document.addEventListener('DOMContentLoaded', addParamsToLinks);
 </script>
-<script>
-  function enviarPedido(event) {
-    event.preventDefault();
-
-    Swal.fire({
-      title: 'Pedido finalizado!',
-      text: 'Você será redirecionado para continuar o pagamento.',
-      icon: 'success',
-      showConfirmButton: false,
-      timer: 2500,
-      timerProgressBar: true,
-      didOpen: () => {
-        Swal.showLoading();
-      }
-    }).then(() => {
-      window.location.href = "https://checkout.arkama.com.br/pay/PL1KMOCD";
-    });
-  }
-</script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="../../js/checkout-pix.js"></script>
 
