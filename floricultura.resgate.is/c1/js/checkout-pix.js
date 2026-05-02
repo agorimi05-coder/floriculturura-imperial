@@ -183,6 +183,54 @@
 
       .imperial-review {
         display: grid;
+        gap: 12px;
+      }
+
+      .imperial-review__product {
+        display: grid;
+        grid-template-columns: 96px 1fr;
+        gap: 12px;
+        align-items: center;
+        padding: 12px;
+        border: 1px solid var(--imperial-line);
+        border-radius: 18px;
+        background: linear-gradient(135deg, #fff, var(--imperial-soft));
+      }
+
+      .imperial-review__image {
+        width: 96px;
+        height: 96px;
+        border-radius: 16px;
+        object-fit: cover;
+        box-shadow: 0 12px 22px rgba(90, 42, 50, .14);
+      }
+
+      .imperial-review__product-label,
+      .imperial-review__label {
+        color: var(--imperial-muted);
+        font-size: .76rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .imperial-review__product-name {
+        margin-top: 5px;
+        color: var(--imperial-ink);
+        font-size: 1rem;
+        line-height: 1.25;
+        font-weight: 900;
+      }
+
+      .imperial-review__price {
+        margin-top: 7px;
+        color: var(--imperial-green);
+        font-size: 1.12rem;
+        font-weight: 950;
+      }
+
+      .imperial-review__grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
       }
 
@@ -190,16 +238,12 @@
         padding: 13px 14px;
         border: 1px solid var(--imperial-line);
         border-radius: 14px;
-        background: #fffafc;
+        background: #fff;
       }
 
       .imperial-review__label {
         display: block;
-        color: var(--imperial-muted);
-        font-size: .76rem;
-        font-weight: 900;
-        text-transform: uppercase;
-        margin-bottom: 4px;
+        margin-bottom: 5px;
       }
 
       .imperial-review__value {
@@ -539,6 +583,27 @@
         }
 
         .imperial-form-actions {
+          grid-template-columns: .86fr 1.14fr;
+          gap: 8px;
+        }
+
+        .imperial-form-actions button {
+          min-height: 50px !important;
+          font-size: .92rem !important;
+          padding-left: 8px !important;
+          padding-right: 8px !important;
+        }
+
+        .imperial-review__product {
+          grid-template-columns: 82px 1fr;
+        }
+
+        .imperial-review__image {
+          width: 82px;
+          height: 82px;
+        }
+
+        .imperial-review__grid {
           grid-template-columns: 1fr;
         }
 
@@ -603,6 +668,37 @@
 
     var submit = document.querySelector('button[type="submit"]');
     if (submit) submit.textContent = "Gerar Pix do pedido";
+  }
+
+  function setupCountdown() {
+    var countdown = document.getElementById("countdown");
+    if (!countdown) return;
+
+    var key = "imperialCheckoutDeadline:" + window.location.pathname;
+    var now = Date.now();
+    var deadline = Number(sessionStorage.getItem(key) || 0);
+
+    if (!deadline || deadline <= now) {
+      deadline = now + 15 * 60 * 1000;
+      sessionStorage.setItem(key, String(deadline));
+    }
+
+    function render() {
+      var remaining = Math.max(0, deadline - Date.now());
+      var minutes = Math.floor(remaining / 60000);
+      var seconds = Math.floor((remaining % 60000) / 1000);
+
+      countdown.textContent =
+        String(minutes).padStart(2, "0") + ":" + String(seconds).padStart(2, "0");
+
+      if (remaining <= 0) {
+        deadline = Date.now() + 15 * 60 * 1000;
+        sessionStorage.setItem(key, String(deadline));
+      }
+    }
+
+    render();
+    window.setInterval(render, 1000);
   }
 
   function setupSteppedCheckout() {
@@ -687,6 +783,7 @@
     function updateReview() {
       var product = getProduct();
       var review = document.getElementById("imperial-review");
+      var image = product.image || "";
       var receiver =
         getField("tipoEntrega") === "presente"
           ? getField("nomeDestinatario") || "Presente para outra pessoa"
@@ -701,12 +798,21 @@
       if (!review) return;
 
       review.innerHTML =
-        reviewLine("Produto", product.name + " - " + formatCurrency(product.totalPrice)) +
-        reviewLine("Comprador", getField("nomeComprador") + " - " + getField("telComprador")) +
-        reviewLine("Recebimento", receiver) +
-        reviewLine("Endereco", address + (getField("complemento") ? " - " + getField("complemento") : "")) +
-        reviewLine("Data e horario", delivery) +
-        reviewLine("Mensagem", getField("observacoes"));
+        '<div class="imperial-review__product">' +
+          (image ? '<img class="imperial-review__image" src="' + escapeHtml(image) + '" alt="' + escapeHtml(product.name) + '">' : '') +
+          '<div>' +
+            '<div class="imperial-review__product-label">Resumo do pedido</div>' +
+            '<div class="imperial-review__product-name">' + escapeHtml(product.name) + '</div>' +
+            '<div class="imperial-review__price">' + formatCurrency(product.totalPrice) + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="imperial-review__grid">' +
+          reviewLine("Comprador", getField("nomeComprador") + " - " + getField("telComprador")) +
+          reviewLine("Recebimento", receiver) +
+          reviewLine("Endereco", address + (getField("complemento") ? " - " + getField("complemento") : "")) +
+          reviewLine("Data e horario", delivery) +
+        '</div>' +
+        reviewLine("Mensagem no cartao", getField("observacoes") || "Sem mensagem");
     }
 
     function setStep(step) {
@@ -786,11 +892,13 @@
     var name = getText(".product-details p strong") || getText(".product-details p") || document.title;
     var fullProductText = getText(".product-details");
     var priceText = getText(".price-new strong") || getText(".price-new");
+    var image = document.querySelector(".product img");
     var amount = moneyToNumber(priceText);
 
     return {
       id: slug(name),
       name: fullProductText.split("\n")[0].replace(/^Kit:\s*/i, "").trim() || name,
+      image: image ? image.getAttribute("src") : "",
       quantity: 1,
       unitPrice: amount,
       totalPrice: amount
@@ -1054,6 +1162,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     injectCheckoutStyles();
     enhanceCheckoutFields();
+    setupCountdown();
     setupSteppedCheckout();
     var product = getProduct();
     if (product.totalPrice) track("ViewContent", product, product.totalPrice);
