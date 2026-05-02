@@ -5,7 +5,7 @@
   var tiktokPixelId =
     window.TIKTOK_PIXEL_ID ||
     (document.querySelector('meta[name="tiktok-pixel-id"]') || {}).content ||
-    "";
+    "D7QRJOJC77U0A0BNA4N0";
 
   function injectCheckoutStyles() {
     if (document.getElementById("imperial-checkout-style")) return;
