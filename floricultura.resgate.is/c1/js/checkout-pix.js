@@ -961,6 +961,19 @@
     });
   }
 
+  function trackInitiateCheckoutOnce(product) {
+    if (!product || !product.id || !product.totalPrice) return;
+
+    var key = "imperialInitiateCheckout:" + product.id;
+
+    try {
+      if (sessionStorage.getItem(key)) return;
+      sessionStorage.setItem(key, new Date().toISOString());
+    } catch (error) {}
+
+    track("InitiateCheckout", product, product.totalPrice);
+  }
+
   function saveOrderForThankYou(transactionId, product, amount, status) {
     if (!transactionId) return;
 
@@ -1108,6 +1121,8 @@
     var payload = buildPayload();
     var product = payload.items[0];
 
+    trackInitiateCheckoutOnce(product);
+
     if (!payload.customer.fullName || !payload.customer.phone || !payload.amount) {
       if (window.Swal) Swal.fire("Confira os dados", "Preencha nome, telefone e dados do pedido.", "warning");
       return;
@@ -1191,6 +1206,9 @@
     setupCountdown();
     setupSteppedCheckout();
     var product = getProduct();
-    if (product.totalPrice) track("ViewContent", product, product.totalPrice);
+    if (product.totalPrice) {
+      track("ViewContent", product, product.totalPrice);
+      trackInitiateCheckoutOnce(product);
+    }
   });
 })();
