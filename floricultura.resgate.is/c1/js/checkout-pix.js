@@ -682,6 +682,133 @@
 
     var submit = document.querySelector('button[type="submit"]');
     if (submit) submit.textContent = "Gerar Pix do pedido";
+
+    setupInputMasks();
+  }
+
+  function onlyDigits(value) {
+    return String(value || "").replace(/\D/g, "");
+  }
+
+  function maskPhone(value) {
+    var digits = onlyDigits(value).slice(0, 11);
+
+    if (digits.length <= 2) return digits ? "(" + digits : "";
+    if (digits.length <= 6) return "(" + digits.slice(0, 2) + ") " + digits.slice(2);
+    if (digits.length <= 10) {
+      return (
+        "(" + digits.slice(0, 2) + ") " +
+        digits.slice(2, 6) + "-" +
+        digits.slice(6)
+      );
+    }
+
+    return (
+      "(" + digits.slice(0, 2) + ") " +
+      digits.slice(2, 7) + "-" +
+      digits.slice(7)
+    );
+  }
+
+  function maskCep(value) {
+    var digits = onlyDigits(value).slice(0, 8);
+    if (digits.length <= 5) return digits;
+    return digits.slice(0, 5) + "-" + digits.slice(5);
+  }
+
+  function cleanName(value) {
+    return String(value || "")
+      .replace(/[0-9]/g, "")
+      .replace(/\s{2,}/g, " ")
+      .replace(/^\s+/, "");
+  }
+
+  function cleanAddressText(value) {
+    return String(value || "")
+      .replace(/\s{2,}/g, " ")
+      .replace(/^\s+/, "");
+  }
+
+  function cleanHouseNumber(value) {
+    return String(value || "")
+      .replace(/[^0-9a-zA-Z\s/-]/g, "")
+      .replace(/\s{2,}/g, " ")
+      .slice(0, 12);
+  }
+
+  function bindInputMask(id, formatter) {
+    var field = document.getElementById(id);
+    if (!field || field.dataset.imperialMasked === "true") return;
+
+    field.dataset.imperialMasked = "true";
+    field.addEventListener("input", function () {
+      var start = field.selectionStart || field.value.length;
+      var before = field.value;
+      field.value = formatter(field.value);
+      if (document.activeElement === field && before.length === field.value.length) {
+        field.setSelectionRange(start, start);
+      }
+    });
+    field.addEventListener("blur", function () {
+      field.value = formatter(field.value).trim();
+    });
+  }
+
+  function setupInputMasks() {
+    ["telComprador", "telDestinatario"].forEach(function (id) {
+      var field = document.getElementById(id);
+      if (!field) return;
+
+      field.setAttribute("maxlength", "15");
+      field.setAttribute("autocomplete", "tel");
+      field.setAttribute("pattern", "\\([0-9]{2}\\) [0-9]{4,5}-[0-9]{4}");
+      field.setAttribute("title", "Digite um telefone com DDD. Ex: (11) 99999-9999");
+      bindInputMask(id, maskPhone);
+    });
+
+    ["cep", "CEP", "codigoPostal"].forEach(function (id) {
+      var field = document.getElementById(id);
+      if (!field) return;
+
+      field.setAttribute("maxlength", "9");
+      field.setAttribute("inputmode", "numeric");
+      field.setAttribute("pattern", "[0-9]{5}-[0-9]{3}");
+      field.setAttribute("title", "Digite um CEP valido. Ex: 01001-000");
+      bindInputMask(id, maskCep);
+    });
+
+    ["nomeComprador", "nomeDestinatario"].forEach(function (id) {
+      var field = document.getElementById(id);
+      if (!field) return;
+
+      field.setAttribute("autocomplete", "name");
+      field.setAttribute("maxlength", "80");
+      field.setAttribute("minlength", "3");
+      bindInputMask(id, cleanName);
+    });
+
+    ["rua", "bairro", "complemento", "observacoes"].forEach(function (id) {
+      var field = document.getElementById(id);
+      if (!field) return;
+
+      field.setAttribute("maxlength", id === "observacoes" ? "180" : "90");
+      bindInputMask(id, cleanAddressText);
+    });
+
+    bindInputMask("numero", cleanHouseNumber);
+
+    var numero = document.getElementById("numero");
+    if (numero) {
+      numero.setAttribute("maxlength", "12");
+      numero.setAttribute("autocomplete", "address-line2");
+    }
+
+    var dataEntrega = document.getElementById("data_entrega");
+    if (dataEntrega) {
+      var today = new Date();
+      today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+      dataEntrega.setAttribute("min", today.toISOString().slice(0, 10));
+    }
   }
 
   function setupCountdown() {
