@@ -1077,7 +1077,7 @@
   }
 
   function track(eventName, product, value) {
-    if (!window.fbq || !eventName) return;
+    if (!window.fbq || !eventName) return false;
     window.fbq("track", eventName, {
       content_type: "product",
       content_ids: [product.id],
@@ -1086,19 +1086,29 @@
       currency: "BRL",
       value: value
     });
+    return true;
   }
 
   function trackInitiateCheckoutOnce(product) {
     if (!product || !product.id || !product.totalPrice) return;
+    if (window.__imperialInitiateCheckoutTracked) return;
 
-    var key = "imperialInitiateCheckout:" + product.id;
+    var attempts = 0;
 
-    try {
-      if (sessionStorage.getItem(key)) return;
-      sessionStorage.setItem(key, new Date().toISOString());
-    } catch (error) {}
+    function fire() {
+      attempts += 1;
 
-    track("InitiateCheckout", product, product.totalPrice);
+      if (track("InitiateCheckout", product, product.totalPrice)) {
+        window.__imperialInitiateCheckoutTracked = true;
+        return;
+      }
+
+      if (attempts < 20) {
+        window.setTimeout(fire, 250);
+      }
+    }
+
+    fire();
   }
 
   function saveOrderForThankYou(transactionId, product, amount, status) {
