@@ -155,6 +155,47 @@ function sanitizePayloadForLog(payload: unknown) {
   return cloned;
 }
 
+function findStringByKeys(payload: unknown, keys: string[]) {
+  const seen = new Set<unknown>();
+  const normalizedKeys = keys.map((key) => key.toLowerCase());
+
+  function visit(value: unknown): string {
+    if (!value || typeof value !== "object" || seen.has(value)) return "";
+    seen.add(value);
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        const found = visit(item);
+        if (found) return found;
+      }
+
+      return "";
+    }
+
+    const record = value as Record<string, unknown>;
+
+    for (const [key, item] of Object.entries(record)) {
+      const normalizedKey = key.toLowerCase().replace(/[^a-z0-9]/g, "");
+      const matches = normalizedKeys.some((candidate) =>
+        normalizedKey.includes(candidate),
+      );
+
+      if (matches && typeof item === "string" && item.trim()) {
+        return item.trim();
+      }
+    }
+
+    for (const item of Object.values(record)) {
+      const found = visit(item);
+      if (found) return found;
+    }
+
+    return "";
+  }
+
+  return visit(payload);
+}
+
 function normalizeBlackcatSaleResponse(payload: any, fallbackAmount: number) {
   const data = payload?.data ?? payload ?? {};
   const paymentData = data?.paymentData ?? {};
@@ -164,7 +205,14 @@ function normalizeBlackcatSaleResponse(payload: any, fallbackAmount: number) {
     paymentData?.qr_code_base64 ??
     paymentData?.qrCodeImage ??
     paymentData?.qr_code_image ??
-    "";
+    data?.qrCodeBase64 ??
+    data?.qr_code_base64 ??
+    findStringByKeys(payload, [
+      "qrcodebase64",
+      "qrcodebase64image",
+      "qrcodeimage",
+      "qrcodepng",
+    ]);
 
   const qrCode =
     typeof rawQrCodeImage === "string" && rawQrCodeImage.startsWith("data:image")
@@ -173,9 +221,24 @@ function normalizeBlackcatSaleResponse(payload: any, fallbackAmount: number) {
         ? `data:image/png;base64,${rawQrCodeImage}`
         : "";
 
+  const copyAndPaste =
+    paymentData?.copyPaste ??
+    paymentData?.copy_paste ??
+    paymentData?.pixCopyPaste ??
+    paymentData?.pix_copy_paste ??
+    paymentData?.qrCode ??
+    data?.copyPaste ??
+    data?.pixCopyPaste ??
+    findStringByKeys(payload, [
+      "copypaste",
+      "pixcopypaste",
+      "pixcopiaecola",
+      "qrcode",
+    ]);
+
   return {
     qrCode,
-    copyAndPaste: paymentData?.copyPaste ?? paymentData?.qrCode ?? "",
+    copyAndPaste,
     transactionId: data?.transactionId ?? "",
     amount: fromCents(data?.amount) ?? fallbackAmount,
     status: data?.status ?? payload?.status ?? "PENDING",

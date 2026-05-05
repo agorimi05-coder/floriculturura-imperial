@@ -35,4 +35,56 @@
   }
 
   window.fbq("track", "PageView");
+
+  function moneyToNumber(value) {
+    var normalized = String(value || "")
+      .replace(/[^\d,.-]/g, "")
+      .replace(/\./g, "")
+      .replace(",", ".");
+    var parsed = Number(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function slug(value) {
+    return String(value || "produto")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+  }
+
+  function getProductFromCard(link) {
+    var nameElement = link.querySelector("h3");
+    var priceElement = link.querySelector(".preco");
+    var imageElement = link.querySelector("img");
+    var name = nameElement ? nameElement.textContent.trim() : "Produto";
+    var value = moneyToNumber(priceElement ? priceElement.textContent : "");
+
+    return {
+      id: slug(name),
+      name: name,
+      value: value,
+      image: imageElement ? imageElement.getAttribute("src") : "",
+    };
+  }
+
+  document.addEventListener("click", function (event) {
+    var link = event.target.closest && event.target.closest(".produtos a.disponivel");
+    if (!link || !window.fbq) return;
+
+    var product = getProductFromCard(link);
+
+    window.fbq("track", "InitiateCheckout", {
+      content_type: "product",
+      content_ids: [product.id],
+      content_name: product.name,
+      currency: "BRL",
+      value: product.value,
+    });
+
+    try {
+      sessionStorage.setItem("imperialSelectedProduct", JSON.stringify(product));
+    } catch (error) {}
+  });
 })();

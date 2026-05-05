@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pedido confirmado | Imperial Floricultura</title>
+    <script src="js/tracking-pixels.js" defer></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        font-family: Inter, Arial, sans-serif;
+        background:
+          radial-gradient(circle at top left, rgba(184, 15, 31, .14), transparent 32rem),
+          linear-gradient(180deg, #fff8fa 0%, #fffaf6 48%, #f7f4f1 100%);
+        color: #22181c;
+      }
+
+      .card {
+        width: min(520px, 100%);
+        border: 1px solid #eadde1;
+        border-radius: 24px;
+        background: #fff;
+        box-shadow: 0 24px 60px rgba(86, 42, 53, .15);
+        overflow: hidden;
+      }
+
+      .hero {
+        padding: 28px 24px;
+        background: linear-gradient(135deg, #17652a, #248437);
+        color: #fff;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 7px 11px;
+        border-radius: 999px;
+        background: rgba(255,255,255,.16);
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 14px 0 8px;
+        font-size: clamp(28px, 7vw, 38px);
+        line-height: 1.05;
+      }
+
+      .hero p {
+        margin: 0;
+        color: rgba(255,255,255,.88);
+        line-height: 1.45;
+      }
+
+      .content {
+        padding: 22px;
+      }
+
+      .summary {
+        display: grid;
+        gap: 10px;
+      }
+
+      .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 13px 14px;
+        border: 1px solid #eadde1;
+        border-radius: 14px;
+        background: #fffafc;
+      }
+
+      .row span {
+        color: #71646a;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .row strong {
+        text-align: right;
+      }
+
+      .amount {
+        color: #248437;
+      }
+
+      a {
+        display: block;
+        margin-top: 16px;
+        padding: 14px 16px;
+        border-radius: 16px;
+        background: #b80f1f;
+        color: #fff;
+        text-align: center;
+        text-decoration: none;
+        font-weight: 900;
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <section class="hero">
+        <span class="badge">Pix aprovado</span>
+        <h1>Pedido confirmado</h1>
+        <p>Recebemos seu pagamento. A Imperial Floricultura vai preparar sua entrega com carinho.</p>
+      </section>
+
+      <section class="content">
+        <div class="summary">
+          <div class="row">
+            <span>Pedido</span>
+            <strong id="product-name">Produto</strong>
+          </div>
+          <div class="row">
+            <span>Valor</span>
+            <strong class="amount" id="order-value">R$ 0,00</strong>
+          </div>
+          <div class="row">
+            <span>Transacao</span>
+            <strong id="transaction-id">-</strong>
+          </div>
+        </div>
+        <a href="/floricultura.resgate.is/c1/">Voltar para a loja</a>
+      </section>
+    </main>
+
+    <script>
+      function formatCurrency(value) {
+        return Number(value || 0).toLocaleString("pt-BR", {
+          style: "currency",
+          currency: "BRL"
+        });
+      }
+
+      function firePurchaseOnce(order) {
+        if (!window.fbq || !order.transactionId) return;
+
+        var key = "imperialPurchaseTracked:" + order.transactionId;
+        if (localStorage.getItem(key)) return;
+
+        window.fbq("track", "Purchase", {
+          content_type: "product",
+          content_ids: [order.contentId || "produto"],
+          content_name: order.contentName || "Produto",
+          currency: "BRL",
+          value: order.value || 0,
+        });
+
+        localStorage.setItem(key, new Date().toISOString());
+      }
+
+      function readOrder() {
+        var params = new URLSearchParams(window.location.search);
+        var transactionId = params.get("transactionId") || "";
+        var sessionOrder = {};
+
+        try {
+          sessionOrder = JSON.parse(sessionStorage.getItem("imperialPaidOrder:" + transactionId) || "{}");
+        } catch (error) {}
+
+        var product = sessionOrder.product || {};
+
+        return {
+          transactionId: transactionId || sessionOrder.transactionId || "",
+          contentId: params.get("content_id") || product.id || "produto",
+          contentName: params.get("content_name") || product.name || "Produto",
+          value: Number(params.get("value") || sessionOrder.amount || product.totalPrice || 0),
+        };
+      }
+
+      window.addEventListener("load", function () {
+        var order = readOrder();
+
+        document.getElementById("product-name").textContent = order.contentName;
+        document.getElementById("order-value").textContent = formatCurrency(order.value);
+        document.getElementById("transaction-id").textContent = order.transactionId || "-";
+
+        firePurchaseOnce(order);
+      });
+    </script>
+  </body>
+</html>

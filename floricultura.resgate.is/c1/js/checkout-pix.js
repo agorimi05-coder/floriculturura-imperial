@@ -2,6 +2,7 @@
   var PAID_STATUSES = ["paid", "approved", "completed", "success", "pago", "aprovado"];
   var PIX_ENDPOINT = "/api/pix/create";
   var STATUS_ENDPOINT = "/api/pix/status";
+  var THANK_YOU_URL = "/floricultura.resgate.is/c1/obrigado.html";
   function injectCheckoutStyles() {
     if (document.getElementById("imperial-checkout-style")) return;
 
@@ -950,6 +951,37 @@
     });
   }
 
+  function saveOrderForThankYou(transactionId, product, amount, status) {
+    if (!transactionId) return;
+
+    try {
+      sessionStorage.setItem(
+        "imperialPaidOrder:" + transactionId,
+        JSON.stringify({
+          transactionId: transactionId,
+          product: product,
+          amount: amount,
+          status: status || "paid",
+          paidAt: new Date().toISOString()
+        }),
+      );
+    } catch (error) {}
+  }
+
+  function redirectToThankYou(transactionId, product, amount, status) {
+    saveOrderForThankYou(transactionId, product, amount, status);
+
+    var params = new URLSearchParams({
+      transactionId: transactionId || "",
+      value: String(amount || product.totalPrice || 0),
+      content_id: product.id || "",
+      content_name: product.name || "",
+      status: status || "paid"
+    });
+
+    window.location.href = THANK_YOU_URL + "?" + params.toString();
+  }
+
   function escapeHtml(value) {
     return String(value || "")
       .replace(/&/g, "&amp;")
@@ -1005,7 +1037,7 @@
       ? "https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=12&data=" + encodeURIComponent(copy)
       : "");
     var qr = qrSrc
-      ? '<img class="imperial-pix__qr" src="' + qrSrc + '" alt="QR Code Pix">'
+      ? '<img class="imperial-pix__qr" src="' + qrSrc + '" alt="QR Code Pix" onerror="this.style.display=\'none\';this.parentNode.querySelector(\'.imperial-pix__qr-error\').style.display=\'block\';"><p class="imperial-pix__hint imperial-pix__qr-error" style="display:none">Nao foi possivel carregar a imagem do QR neste dispositivo. Use o Pix copia e cola abaixo.</p>'
       : '<div class="imperial-pix__hint">QR Code indisponivel. Use o Pix copia e cola abaixo.</div>';
 
     return (
@@ -1054,10 +1086,7 @@
 
         if (PAID_STATUSES.indexOf(status) >= 0 || data.paidAt) {
           window.clearInterval(timer);
-          track("Purchase", product, amount);
-          if (window.Swal) {
-            Swal.fire("Pagamento aprovado", "Recebemos seu Pix. Seu pedido foi confirmado.", "success");
-          }
+          redirectToThankYou(transactionId, product, amount, data.status || "paid");
         }
       } catch (error) {}
     }, 5000);
@@ -1073,8 +1102,6 @@
       if (window.Swal) Swal.fire("Confira os dados", "Preencha nome, telefone e dados do pedido.", "warning");
       return;
     }
-
-    track("InitiateCheckout", product, payload.amount);
 
     if (window.Swal) {
       Swal.fire({
@@ -1094,6 +1121,18 @@
       var data = await response.json();
 
       if (!response.ok) throw new Error(data.message || "Nao foi possivel gerar o Pix.");
+
+      try {
+        sessionStorage.setItem(
+          "imperialPendingOrder:" + data.transactionId,
+          JSON.stringify({
+            transactionId: data.transactionId,
+            product: product,
+            amount: payload.amount,
+            createdAt: new Date().toISOString()
+          }),
+        );
+      } catch (error) {}
 
       track("AddPaymentInfo", product, payload.amount);
 
