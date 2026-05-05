@@ -1193,11 +1193,9 @@
 
   function pixHtml(data, product, amount) {
     var copy = data.copyAndPaste || "";
-    var qrSrc = data.qrCode || (copy
-      ? "https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=12&data=" + encodeURIComponent(copy)
-      : "");
+    var qrSrc = data.qrCode || "";
     var qr = qrSrc
-      ? '<img class="imperial-pix__qr" src="' + qrSrc + '" alt="QR Code Pix" onerror="this.style.display=\'none\';this.parentNode.querySelector(\'.imperial-pix__qr-error\').style.display=\'block\';"><p class="imperial-pix__hint imperial-pix__qr-error" style="display:none">Nao foi possivel carregar a imagem do QR neste dispositivo. Use o Pix copia e cola abaixo.</p>'
+      ? '<img class="imperial-pix__qr" src="' + qrSrc + '" alt="QR Code Pix">'
       : '<div class="imperial-pix__hint">QR Code indisponivel. Use o Pix copia e cola abaixo.</div>';
 
     return (

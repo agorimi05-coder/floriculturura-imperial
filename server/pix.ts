@@ -1,3 +1,5 @@
+import QRCode from "qrcode";
+
 type CheckoutCustomer = {
   fullName?: string;
   email?: string | null;
@@ -249,7 +251,23 @@ function getWebhookEvent(input: PixWebhookInput) {
   );
 }
 
-function normalizeBlackcatSaleResponse(payload: any, fallbackAmount: number) {
+async function createQrCodeDataUrl(copyAndPaste: string) {
+  if (!copyAndPaste) return "";
+
+  try {
+    return await QRCode.toDataURL(copyAndPaste, {
+      errorCorrectionLevel: "M",
+      margin: 2,
+      scale: 8,
+      type: "image/png",
+    });
+  } catch (error) {
+    console.error("QR CODE GENERATION ERROR", error);
+    return "";
+  }
+}
+
+async function normalizeBlackcatSaleResponse(payload: any, fallbackAmount: number) {
   const data = payload?.data ?? payload ?? {};
   const paymentData = data?.paymentData ?? {};
   const rawQrCodeImage =
@@ -289,8 +307,10 @@ function normalizeBlackcatSaleResponse(payload: any, fallbackAmount: number) {
       "qrcode",
     ]);
 
+  const generatedQrCode = qrCode || (await createQrCodeDataUrl(copyAndPaste));
+
   return {
-    qrCode,
+    qrCode: generatedQrCode,
     copyAndPaste,
     transactionId: data?.transactionId ?? "",
     amount: fromCents(data?.amount) ?? fallbackAmount,
@@ -469,7 +489,7 @@ export async function createPixCharge(input: PixCheckoutInput) {
     };
   }
 
-  const normalized = normalizeBlackcatSaleResponse(attempt.payload, parsedAmount);
+  const normalized = await normalizeBlackcatSaleResponse(attempt.payload, parsedAmount);
 
   await sendOrderToWebhook({
     event: "pix_created",
@@ -551,7 +571,7 @@ export async function getPixStatus(transactionId?: string | null) {
     };
   }
 
-  const normalized = normalizeBlackcatSaleResponse(payload, 0);
+  const normalized = await normalizeBlackcatSaleResponse(payload, 0);
 
   if (PAID_STATUSES.has(normalizeStatus(normalized.status))) {
     await sendOrderToWebhook({
