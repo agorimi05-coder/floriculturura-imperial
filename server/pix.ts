@@ -267,6 +267,22 @@ async function createQrCodeDataUrl(copyAndPaste: string) {
   }
 }
 
+async function createQrCodeSvg(copyAndPaste: string) {
+  if (!copyAndPaste) return "";
+
+  try {
+    return await QRCode.toString(copyAndPaste, {
+      errorCorrectionLevel: "M",
+      margin: 2,
+      type: "svg",
+      width: 260,
+    });
+  } catch (error) {
+    console.error("QR CODE SVG GENERATION ERROR", error);
+    return "";
+  }
+}
+
 async function normalizeBlackcatSaleResponse(payload: any, fallbackAmount: number) {
   const data = payload?.data ?? payload ?? {};
   const paymentData = data?.paymentData ?? {};
@@ -307,10 +323,12 @@ async function normalizeBlackcatSaleResponse(payload: any, fallbackAmount: numbe
       "qrcode",
     ]);
 
+  const qrCodeSvg = await createQrCodeSvg(copyAndPaste);
   const generatedQrCode = qrCode || (await createQrCodeDataUrl(copyAndPaste));
 
   return {
     qrCode: generatedQrCode,
+    qrCodeSvg,
     copyAndPaste,
     transactionId: data?.transactionId ?? "",
     amount: fromCents(data?.amount) ?? fallbackAmount,

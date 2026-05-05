@@ -481,6 +481,19 @@
         border-radius: 14px;
       }
 
+      .imperial-pix__qr-svg {
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        background: #fff;
+      }
+
+      .imperial-pix__qr-svg svg {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
       .imperial-pix__hint {
         margin: 10px 0 0;
         color: var(--imperial-muted);
@@ -1193,8 +1206,11 @@
 
   function pixHtml(data, product, amount) {
     var copy = data.copyAndPaste || "";
+    var qrSvg = data.qrCodeSvg || "";
     var qrSrc = data.qrCode || "";
-    var qr = qrSrc
+    var qr = qrSvg
+      ? '<div class="imperial-pix__qr imperial-pix__qr-svg" aria-label="QR Code Pix">' + qrSvg + '</div>'
+      : qrSrc
       ? '<img class="imperial-pix__qr" src="' + qrSrc + '" alt="QR Code Pix">'
       : '<div class="imperial-pix__hint">QR Code indisponivel. Use o Pix copia e cola abaixo.</div>';
 
