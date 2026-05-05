@@ -124,7 +124,7 @@
 	<meta name="apple-mobile-web-app-title" content="Açaí Nacional">
 	<!-- SweetAlert2 -->
 	<script src="sweetalert2%254011"></script>
-	<script src="js/tiktok-pixel.js" defer></script>
+	<script src="js/tracking-pixels.js" defer></script>
 	<link rel="stylesheet" href="icon.html">
 
 </head>
@@ -1009,7 +1009,7 @@ function addParamsToLinks() {
 
     links.forEach(link => {
         // Verifica se o link já possui parâmetros de URL
-        const url = new URL(link.html);
+        const url = new URL(link.href);
 
         if (url.search) {
             // Se já houver parâmetros, os adiciona aos parâmetros existentes

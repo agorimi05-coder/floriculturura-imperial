@@ -2,11 +2,6 @@
   var PAID_STATUSES = ["paid", "approved", "completed", "success", "pago", "aprovado"];
   var PIX_ENDPOINT = "/api/pix/create";
   var STATUS_ENDPOINT = "/api/pix/status";
-  var tiktokPixelId =
-    window.TIKTOK_PIXEL_ID ||
-    (document.querySelector('meta[name="tiktok-pixel-id"]') || {}).content ||
-    "D7QRJOJC77U0A0BNA4N0";
-
   function injectCheckoutStyles() {
     if (document.getElementById("imperial-checkout-style")) return;
 
@@ -943,49 +938,13 @@
     };
   }
 
-  function ensureTikTok() {
-    if (!tiktokPixelId || window.ttq) return;
-
-    !function (w, d, t) {
-      w.TiktokAnalyticsObject = t;
-      var ttq = w[t] = w[t] || [];
-      ttq.methods = ["page", "track", "identify", "instances", "debug", "on", "off", "once", "ready", "alias", "group", "enableCookie", "disableCookie"];
-      ttq.setAndDefer = function (target, method) {
-        target[method] = function () {
-          target.push([method].concat(Array.prototype.slice.call(arguments, 0)));
-        };
-      };
-      for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(ttq, ttq.methods[i]);
-      ttq.instance = function (name) {
-        var instance = ttq._i[name] || [];
-        for (var i = 0; i < ttq.methods.length; i++) ttq.setAndDefer(instance, ttq.methods[i]);
-        return instance;
-      };
-      ttq.load = function (id) {
-        var script = d.createElement("script");
-        script.type = "text/javascript";
-        script.async = true;
-        script.src = "https://analytics.tiktok.com/i18n/pixel/events.js?sdkid=" + id + "&lib=" + t;
-        var first = d.getElementsByTagName("script")[0];
-        first.parentNode.insertBefore(script, first);
-      };
-      ttq._i = {};
-      ttq._t = {};
-      ttq._o = {};
-      ttq._partner = "codex";
-      ttq.load(tiktokPixelId);
-      ttq.page();
-    }(window, document, "ttq");
-  }
-
   function track(eventName, product, value) {
-    ensureTikTok();
-    if (!window.ttq || !eventName) return;
-    window.ttq.track(eventName, {
+    if (!window.fbq || !eventName) return;
+    window.fbq("track", eventName, {
       content_type: "product",
       content_ids: [product.id],
-      description: product.name,
-      quantity: product.quantity,
+      content_name: product.name,
+      num_items: Number(product.quantity || 1),
       currency: "BRL",
       value: value
     });
