@@ -30,6 +30,7 @@ type AttributionData = {
   utm_term?: string;
   fbclid?: string;
   captured_at?: string;
+  [key: string]: unknown;
 };
 
 type PixCheckoutInput = {
@@ -46,6 +47,15 @@ type PixWebhookInput = {
   raw?: unknown;
 };
 
+const PAID_STATUSES = new Set([
+  "paid",
+  "approved",
+  "completed",
+  "success",
+  "pago",
+  "aprovado",
+]);
+
 function toCents(value: number) {
   return Math.round(Number(value) * 100);
 }
@@ -61,6 +71,10 @@ function normalizeDigits(value?: string | null) {
 
 function normalizeString(value?: string | null) {
   return (value ?? "").trim();
+}
+
+function normalizeStatus(value?: string | null) {
+  return normalizeString(value).toLowerCase();
 }
 
 function normalizeEmail(value?: string | null) {
@@ -194,6 +208,45 @@ function findStringByKeys(payload: unknown, keys: string[]) {
   }
 
   return visit(payload);
+}
+
+function pickAttributionFields(attribution: AttributionData) {
+  const output: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(attribution)) {
+    if (value === undefined || value === null || value === "") continue;
+    output[key] = value;
+  }
+
+  return output;
+}
+
+function getWebhookTransactionId(input: PixWebhookInput) {
+  return (
+    normalizeString(input.transactionId) ||
+    findStringByKeys(input.raw, [
+      "transactionid",
+      "transaction",
+      "saleid",
+      "orderid",
+      "externalref",
+    ])
+  );
+}
+
+function getWebhookStatus(input: PixWebhookInput) {
+  return (
+    normalizeString(input.status) ||
+    findStringByKeys(input.raw, ["status", "paymentstatus"])
+  );
+}
+
+function getWebhookEvent(input: PixWebhookInput) {
+  return (
+    normalizeString(input.event) ||
+    findStringByKeys(input.raw, ["event", "type"]) ||
+    "pix_webhook"
+  );
 }
 
 function normalizeBlackcatSaleResponse(payload: any, fallbackAmount: number) {
@@ -419,6 +472,7 @@ export async function createPixCharge(input: PixCheckoutInput) {
   const normalized = normalizeBlackcatSaleResponse(attempt.payload, parsedAmount);
 
   await sendOrderToWebhook({
+    event: "pix_created",
     createdAt: new Date().toISOString(),
     transactionId: normalized.transactionId,
     externalRef: body.externalRef,
@@ -427,6 +481,8 @@ export async function createPixCharge(input: PixCheckoutInput) {
     phone,
     amount: parsedAmount,
     status: normalized.status,
+    productId: input.items?.[0]?.id ?? "",
+    productName: input.items?.[0]?.name ?? "",
     utm_source: attribution.utm_source ?? "",
     utm_medium: attribution.utm_medium ?? "",
     utm_campaign: attribution.utm_campaign ?? "",
@@ -434,6 +490,7 @@ export async function createPixCharge(input: PixCheckoutInput) {
     utm_term: attribution.utm_term ?? "",
     fbclid: attribution.fbclid ?? "",
     captured_at: attribution.captured_at ?? "",
+    attribution: pickAttributionFields(attribution),
   });
 
   return {
@@ -494,9 +551,22 @@ export async function getPixStatus(transactionId?: string | null) {
     };
   }
 
+  const normalized = normalizeBlackcatSaleResponse(payload, 0);
+
+  if (PAID_STATUSES.has(normalizeStatus(normalized.status))) {
+    await sendOrderToWebhook({
+      event: "pix_paid_status_check",
+      checkedAt: new Date().toISOString(),
+      transactionId: normalized.transactionId || transactionId,
+      amount: normalized.amount,
+      status: normalized.status,
+      paidAt: normalized.paidAt ?? null,
+    });
+  }
+
   return {
     status: 200,
-    body: normalizeBlackcatSaleResponse(payload, 0),
+    body: normalized,
   };
 }
 
@@ -517,13 +587,28 @@ export async function receivePixWebhook(input: PixWebhookInput) {
     }
   }
 
+  const transactionId = getWebhookTransactionId(input);
+  const status = getWebhookStatus(input);
+  const event = getWebhookEvent(input);
+  const isPaid = PAID_STATUSES.has(normalizeStatus(status));
+
+  await sendOrderToWebhook({
+    event: "pix_webhook",
+    receivedAt: new Date().toISOString(),
+    providerEvent: event,
+    transactionId,
+    status,
+    isPaid,
+  });
+
   return {
     status: 200,
     body: {
       received: true,
-      event: input.event ?? "unknown",
-      transactionId: input.transactionId ?? null,
-      status: input.status ?? "received",
+      event,
+      transactionId: transactionId || null,
+      status: status || "received",
+      isPaid,
     },
   };
 }

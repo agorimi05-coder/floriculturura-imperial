@@ -921,14 +921,24 @@
 
   function getAttribution() {
     var params = new URLSearchParams(window.location.search);
-    try {
-      var saved = JSON.parse(localStorage.getItem("urlParams") || "{}");
-      Object.keys(saved).forEach(function (key) {
-        if (!params.has(key) && saved[key]) params.set(key, saved[key]);
-      });
-    } catch (error) {}
+    var attribution = {};
+    var storageKeys = ["urlParams", "imperialTrackingParams"];
 
-    return {
+    storageKeys.forEach(function (storageKey) {
+      try {
+        var saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        Object.keys(saved).forEach(function (key) {
+          if (saved[key]) attribution[key] = saved[key];
+          if (!params.has(key) && saved[key]) params.set(key, saved[key]);
+        });
+      } catch (error) {}
+    });
+
+    params.forEach(function (value, key) {
+      if (value) attribution[key] = value;
+    });
+
+    return Object.assign(attribution, {
       utm_source: params.get("utm_source") || "",
       utm_medium: params.get("utm_medium") || "",
       utm_campaign: params.get("utm_campaign") || "",
@@ -936,7 +946,7 @@
       utm_term: params.get("utm_term") || "",
       fbclid: params.get("fbclid") || "",
       captured_at: new Date().toISOString()
-    };
+    });
   }
 
   function track(eventName, product, value) {
