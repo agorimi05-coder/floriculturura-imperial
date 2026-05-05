@@ -143,10 +143,10 @@
       }
 
       function firePurchaseOnce(order) {
-        if (!window.fbq || !order.transactionId) return;
+        if (!window.fbq) return;
 
-        var key = "imperialPurchaseTracked:" + order.transactionId;
-        if (localStorage.getItem(key)) return;
+        var key = order.transactionId ? "imperialPurchaseTracked:" + order.transactionId : "";
+        if (key && localStorage.getItem(key)) return;
 
         window.fbq("track", "Purchase", {
           content_type: "product",
@@ -156,25 +156,45 @@
           value: order.value || 0,
         });
 
-        localStorage.setItem(key, new Date().toISOString());
+        if (key) localStorage.setItem(key, new Date().toISOString());
       }
 
       function readOrder() {
         var params = new URLSearchParams(window.location.search);
-        var transactionId = params.get("transactionId") || "";
+        var transactionId =
+          params.get("transactionId") ||
+          params.get("transaction_id") ||
+          params.get("id") ||
+          "";
         var sessionOrder = {};
+        var selectedProduct = {};
 
         try {
-          sessionOrder = JSON.parse(sessionStorage.getItem("imperialPaidOrder:" + transactionId) || "{}");
+          if (transactionId) {
+            sessionOrder = JSON.parse(sessionStorage.getItem("imperialPaidOrder:" + transactionId) || "{}");
+          }
         } catch (error) {}
 
-        var product = sessionOrder.product || {};
+        try {
+          selectedProduct = JSON.parse(sessionStorage.getItem("imperialSelectedProduct") || "{}");
+        } catch (error) {}
+
+        var product = sessionOrder.product || selectedProduct || {};
+        var value =
+          Number(
+            params.get("value") ||
+            params.get("valor") ||
+            sessionOrder.amount ||
+            product.totalPrice ||
+            product.value ||
+            0
+          ) || 0;
 
         return {
           transactionId: transactionId || sessionOrder.transactionId || "",
           contentId: params.get("content_id") || product.id || "produto",
           contentName: params.get("content_name") || product.name || "Produto",
-          value: Number(params.get("value") || sessionOrder.amount || product.totalPrice || 0),
+          value: value,
         };
       }
 
